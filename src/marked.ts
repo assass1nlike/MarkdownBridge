@@ -572,6 +572,10 @@ export async function markToBili(content: string): Promise<string> {
     });
     
     let result = marked(content);
+    // Restore once more over the complete generated HTML. Some marked
+    // renderers (headings, links, etc.) do not route their content through
+    // renderer.text(), so restoring only there can leak a token as plain text.
+    result = restoreLatex(result, formulas, latexTokenPrefix);
     // 异步上传图片
     images.forEach(v => {
         imageTask(v);

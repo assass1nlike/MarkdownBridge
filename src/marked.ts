@@ -431,7 +431,9 @@ export async function markToBili(content: string): Promise<string> {
                 return e.outerHTML;
             },
             hr() {
-                return `<figure class="img-box" contenteditable="false"><img src="//i0.hdslb.com/bfs/article/4aa545dccf7de8d4a93c2b2b8e3265ac0a26d216.png" class="cut-off-2" _src="//i0.hdslb.com/bfs/article/4aa545dccf7de8d4a93c2b2b8e3265ac0a26d216.png"></figure>`;
+                // The current Bilibili editor's horizontalRule extension
+                // parses and renders a plain <hr> node.
+                return '<hr>';
             },
             list(body, ordered, start) {
                 if (ordered) {

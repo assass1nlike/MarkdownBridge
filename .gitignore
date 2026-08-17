@@ -1,0 +1,18 @@
+# Dependencies and local build output
+node_modules/
+dev/
+coverage/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local files
+*.log
+test.js
+design/
+
+# Leftover upstream checkout; the new repository is rooted one level above.
+/bilibili-article-md/

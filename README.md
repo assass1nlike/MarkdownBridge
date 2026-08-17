@@ -31,7 +31,7 @@ https://member.bilibili.com/platform/upload/text/new-edit
 
 4. 打开 B 站图文投稿页。页面右上角会出现蓝色“导入 MD”按钮；内层编辑器加载完成后，工具栏也会出现 `M` 按钮。
 
-如果升级过旧版本，请确认 Tampermonkey 中显示的版本号为 `0.0.10`，然后使用 `Ctrl+F5` 强制刷新投稿页。
+如果升级过旧版本，请确认 Tampermonkey 中显示的版本号为 `0.0.9`，然后使用 `Ctrl+F5` 强制刷新投稿页。
 
 ## 公式示例
 

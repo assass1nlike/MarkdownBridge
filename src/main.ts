@@ -77,7 +77,7 @@ function insertPageImportButton() {
     button.id = 'bmd-page-import';
     button.type = 'button';
     button.textContent = '导入 MD';
-    button.title = 'bilibili-article-md 0.0.8：导入 Markdown 文件';
+    button.title = 'bilibili-article-md 0.0.9：导入 Markdown 文件';
     Object.assign(button.style, {
         position: 'fixed',
         top: '120px',

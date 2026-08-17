@@ -175,16 +175,16 @@ function makeLatexImage(tex: string): string {
  * fenced code blocks are deliberately left untouched.
  */
 function stashLatex(content: string, formulas: string[], tokenPrefix: string): string {
-    const stash = (tex: string, block = false) => {
+    const stash = (tex: string) => {
         const index = formulas.push(tex) - 1;
-        return `${tokenPrefix}${block ? 'BLOCK' : ''}${index}END`;
+        return `${tokenPrefix}${index}END`;
     };
     const replaceOutsideCode = (text: string) => {
         let result = text;
         // Surround block formulas with blank lines so marked emits a
         // separate paragraph instead of leaving the image inline with text.
-        result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_origin, tex) => `\n\n${stash(tex, true)}\n\n`);
-        result = result.replace(/\$\$([\s\S]*?)\$\$/g, (_origin, tex) => `\n\n${stash(tex, true)}\n\n`);
+        result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_origin, tex) => `\n\n${stash(tex)}\n\n`);
+        result = result.replace(/\$\$([\s\S]*?)\$\$/g, (_origin, tex) => `\n\n${stash(tex)}\n\n`);
         result = result.replace(/\\\(([\s\S]*?)\\\)/g, (_origin, tex) => stash(tex));
         result = result.replace(/(^|[^\\$])\$([^$\n]+?)\$(?!\$)/g, (_origin, prefix, tex) => {
             return prefix + stash(tex);
@@ -199,8 +199,31 @@ function stashLatex(content: string, formulas: string[], tokenPrefix: string): s
 }
 
 function restoreLatex(text: string, formulas: string[], tokenPrefix: string): string {
-    const pattern = new RegExp(`${tokenPrefix}(?:BLOCK)?(\\d+)END`, 'g');
-    return text.replace(pattern, (_origin, index) => makeLatexImage(formulas[Number(index)] || ''));
+    // Scan token boundaries directly. This avoids regex edge cases and makes
+    // it impossible for an internal BLOCK marker to leak into the editor.
+    let result = '';
+    let cursor = 0;
+    while (cursor < text.length) {
+        const start = text.indexOf(tokenPrefix, cursor);
+        if (start < 0) {
+            result += text.slice(cursor);
+            break;
+        }
+        result += text.slice(cursor, start);
+        const end = text.indexOf('END', start + tokenPrefix.length);
+        if (end < 0) {
+            result += text.slice(start);
+            break;
+        }
+        const indexText = text.slice(start + tokenPrefix.length, end);
+        if (!/^\d+$/.test(indexText)) {
+            result += text.slice(start, end + 3);
+        } else {
+            result += makeLatexImage(formulas[Number(indexText)] || '');
+        }
+        cursor = end + 3;
+    }
+    return result;
 }
 
 /**

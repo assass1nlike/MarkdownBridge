@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        bilibili-article-md-new-edit
-// @version     0.0.9
+// @version     0.0.11
 // @author      Passkou and contributors
 // @description 将 Markdown 文档转换并导入 B 站新版图文编辑器的用户脚本
 // @match       https://member.bilibili.com/platform/upload/text/new-edit*

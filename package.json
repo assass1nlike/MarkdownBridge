@@ -1,6 +1,6 @@
 {
   "name": "bilibili-article-md",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "将 Markdown 文档转换并导入 B 站新版图文编辑器的用户脚本",
   "private": true,
   "scripts": {

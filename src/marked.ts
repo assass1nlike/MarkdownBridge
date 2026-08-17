@@ -175,14 +175,16 @@ function makeLatexImage(tex: string): string {
  * fenced code blocks are deliberately left untouched.
  */
 function stashLatex(content: string, formulas: string[], tokenPrefix: string): string {
-    const stash = (tex: string) => {
+    const stash = (tex: string, block = false) => {
         const index = formulas.push(tex) - 1;
-        return `${tokenPrefix}${index}END`;
+        return `${tokenPrefix}${block ? 'BLOCK' : ''}${index}END`;
     };
     const replaceOutsideCode = (text: string) => {
         let result = text;
-        result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_origin, tex) => stash(tex));
-        result = result.replace(/\$\$([\s\S]*?)\$\$/g, (_origin, tex) => stash(tex));
+        // Surround block formulas with blank lines so marked emits a
+        // separate paragraph instead of leaving the image inline with text.
+        result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_origin, tex) => `\n\n${stash(tex, true)}\n\n`);
+        result = result.replace(/\$\$([\s\S]*?)\$\$/g, (_origin, tex) => `\n\n${stash(tex, true)}\n\n`);
         result = result.replace(/\\\(([\s\S]*?)\\\)/g, (_origin, tex) => stash(tex));
         result = result.replace(/(^|[^\\$])\$([^$\n]+?)\$(?!\$)/g, (_origin, prefix, tex) => {
             return prefix + stash(tex);
@@ -197,7 +199,7 @@ function stashLatex(content: string, formulas: string[], tokenPrefix: string): s
 }
 
 function restoreLatex(text: string, formulas: string[], tokenPrefix: string): string {
-    const pattern = new RegExp(`${tokenPrefix}(\\d+)END`, 'g');
+    const pattern = new RegExp(`${tokenPrefix}(?:BLOCK)?(\\d+)END`, 'g');
     return text.replace(pattern, (_origin, index) => makeLatexImage(formulas[Number(index)] || ''));
 }
 

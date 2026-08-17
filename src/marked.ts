@@ -180,15 +180,60 @@ function stashLatex(content: string, formulas: string[], tokenPrefix: string): s
         return `${tokenPrefix}${index}END`;
     };
     const replaceOutsideCode = (text: string) => {
-        let result = text;
-        // Surround block formulas with blank lines so marked emits a
-        // separate paragraph instead of leaving the image inline with text.
-        result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_origin, tex) => `\n\n${stash(tex)}\n\n`);
-        result = result.replace(/\$\$([\s\S]*?)\$\$/g, (_origin, tex) => `\n\n${stash(tex)}\n\n`);
-        result = result.replace(/\\\(([\s\S]*?)\\\)/g, (_origin, tex) => stash(tex));
-        result = result.replace(/(^|[^\\$])\$([^$\n]+?)\$(?!\$)/g, (_origin, prefix, tex) => {
-            return prefix + stash(tex);
-        });
+        let result = '';
+        let cursor = 0;
+        const findClosingDollar = (start: number): number => {
+            let position = start;
+            while ((position = text.indexOf('$', position)) >= 0) {
+                if (text.indexOf('\n', start) >= 0 && position > text.indexOf('\n', start)) {
+                    return -1;
+                }
+                const escaped = position > 0 && text[position - 1] === '\\';
+                const partOfDouble = text[position + 1] === '$';
+                if (!escaped && !partOfDouble) return position;
+                position += 1;
+            }
+            return -1;
+        };
+
+        // Pair delimiters in source order. This prevents text between two
+        // display blocks from being consumed as part of a TeX expression.
+        while (cursor < text.length) {
+            if (text.startsWith('$$', cursor)) {
+                const end = text.indexOf('$$', cursor + 2);
+                if (end >= 0) {
+                    result += `\n\n${stash(text.slice(cursor + 2, end))}\n\n`;
+                    cursor = end + 2;
+                    continue;
+                }
+            }
+            if (text.startsWith('\\[', cursor)) {
+                const end = text.indexOf('\\]', cursor + 2);
+                if (end >= 0) {
+                    result += `\n\n${stash(text.slice(cursor + 2, end))}\n\n`;
+                    cursor = end + 2;
+                    continue;
+                }
+            }
+            if (text.startsWith('\\(', cursor)) {
+                const end = text.indexOf('\\)', cursor + 2);
+                if (end >= 0) {
+                    result += stash(text.slice(cursor + 2, end));
+                    cursor = end + 2;
+                    continue;
+                }
+            }
+            if (text[cursor] === '$' && text[cursor - 1] !== '$' && text[cursor - 1] !== '\\') {
+                const end = findClosingDollar(cursor + 1);
+                if (end > cursor + 1) {
+                    result += stash(text.slice(cursor + 1, end));
+                    cursor = end + 1;
+                    continue;
+                }
+            }
+            result += text[cursor];
+            cursor += 1;
+        }
         return result;
     };
 

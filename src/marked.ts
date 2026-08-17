@@ -181,10 +181,21 @@ function stashLatex(content: string, formulas: string[], tokenPrefix: string): s
     };
     const replaceOutsideCode = (text: string) => {
         let result = text;
-        // Surround block formulas with blank lines so marked emits a
-        // separate paragraph instead of leaving the image inline with text.
-        result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_origin, tex) => `\n\n${stash(tex)}\n\n`);
-        result = result.replace(/\$\$([\s\S]*?)\$\$/g, (_origin, tex) => `\n\n${stash(tex)}\n\n`);
+        // Match multiline display formulas by delimiter lines. Pairing the
+        // first opening line with the first closing line prevents ordinary
+        // text between two formula blocks from being consumed as TeX.
+        result = result.replace(
+            /(^|\n)[ \t]*\\\[[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*\\\][ \t]*(?=\n|$)/g,
+            (_origin, prefix, tex) => `${prefix}\n\n${stash(tex)}\n\n`
+        );
+        result = result.replace(
+            /(^|\n)[ \t]*\$\$[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*\$\$[ \t]*(?=\n|$)/g,
+            (_origin, prefix, tex) => `${prefix}\n\n${stash(tex)}\n\n`
+        );
+        // Also accept a same-line display form such as `$$x^2$$`, but never
+        // cross a newline when pairing its delimiters.
+        result = result.replace(/\\\[([^\r\n]*?)\\\]/g, (_origin, tex) => `\n\n${stash(tex)}\n\n`);
+        result = result.replace(/\$\$([^\r\n]*?)\$\$/g, (_origin, tex) => `\n\n${stash(tex)}\n\n`);
         result = result.replace(/\\\(([\s\S]*?)\\\)/g, (_origin, tex) => stash(tex));
         result = result.replace(/(^|[^\\$])\$([^$\n]+?)\$(?!\$)/g, (_origin, prefix, tex) => {
             return prefix + stash(tex);
@@ -572,6 +583,10 @@ export async function markToBili(content: string): Promise<string> {
     });
     
     let result = marked(content);
+    // A token can occur in a renderer other than text() (for example a
+    // heading or a paragraph assembled by marked). Restore once more over
+    // the complete generated HTML so no placeholder can leak to Bilibili.
+    result = restoreLatex(result, formulas, latexTokenPrefix);
     // 异步上传图片
     images.forEach(v => {
         imageTask(v);

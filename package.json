@@ -1,0 +1,46 @@
+{
+  "name": "bilibili-article-md",
+  "version": "0.0.7",
+  "description": "将 Markdown 文档转换并导入 B 站新版图文编辑器的用户脚本",
+  "private": true,
+  "scripts": {
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider NODE_ENV=production webpack",
+    "debug": "cross-env NODE_ENV=development webpack -w"
+  },
+  "keywords": [
+    "bilibili",
+    "markdown",
+    "article",
+    "latex",
+    "tampermonkey",
+    "userscript"
+  ],
+  "author": "Passkou and contributors",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/crypto-js": "^4.0.1",
+    "@types/js-cookie": "^3.0.6",
+    "@types/marked": "^1.2.2",
+    "@types/mime": "^2.0.3",
+    "@types/node": "^14.14.25",
+    "@types/prismjs": "^1.16.2",
+    "@types/tampermonkey": "^4.0.0",
+    "@types/terser-webpack-plugin": "^5.0.2",
+    "cross-env": "^7.0.3",
+    "terser-webpack-plugin": "^5.1.1",
+    "ts-loader": "^8.0.15",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.6",
+    "webpack": "^5.20.2",
+    "webpack-cli": "^4.5.0",
+    "webpack-userscript": "^2.5.6"
+  },
+  "dependencies": {
+    "canvas-table": "^0.3.0",
+    "crypto-js": "^4.0.0",
+    "js-cookie": "^2.2.1",
+    "marked": "^1.2.9",
+    "mime": "^2.5.0",
+    "prismjs": "^1.23.0"
+  }
+}

@@ -1,6 +1,8 @@
 import marked from 'marked';
 import {getEditorDocument, loadHeaders, safeHTML} from './utils';
 import Prism from 'prismjs';
+import {headingTag} from './heading';
+import {normalizeQuotedLatex} from './latex';
 import { CanvasTable, CTConfig, CTData } from "canvas-table";
 import CryptoJS from 'crypto-js';
 import cookie from 'js-cookie';
@@ -182,6 +184,11 @@ function stashLatex(content: string, formulas: string[], tokenPrefix: string): s
     const replaceOutsideCode = (text: string) => {
         let result = '';
         let cursor = 0;
+        const quotePrefixAt = (position: number): string => {
+            const lineStart = text.lastIndexOf('\n', position - 1) + 1;
+            const prefix = text.slice(lineStart, position).match(/^[ \t]*(?:>[ \t]?)+/);
+            return prefix?.[0] || '';
+        };
         const findClosingDollar = (start: number): number => {
             let position = start;
             while ((position = text.indexOf('$', position)) >= 0) {
@@ -202,7 +209,14 @@ function stashLatex(content: string, formulas: string[], tokenPrefix: string): s
             if (text.startsWith('$$', cursor)) {
                 const end = text.indexOf('$$', cursor + 2);
                 if (end >= 0) {
-                    result += `\n\n${stash(text.slice(cursor + 2, end))}\n\n`;
+                    const formula = text.slice(cursor + 2, end);
+                    const quotePrefix = quotePrefixAt(cursor);
+                    const normalized = quotePrefix
+                        ? normalizeQuotedLatex(formula)
+                        : formula;
+                    result += quotePrefix
+                        ? `${quotePrefix}${stash(normalized)}`
+                        : `\n\n${stash(normalized)}\n\n`;
                     cursor = end + 2;
                     continue;
                 }
@@ -210,7 +224,14 @@ function stashLatex(content: string, formulas: string[], tokenPrefix: string): s
             if (text.startsWith('\\[', cursor)) {
                 const end = text.indexOf('\\]', cursor + 2);
                 if (end >= 0) {
-                    result += `\n\n${stash(text.slice(cursor + 2, end))}\n\n`;
+                    const formula = text.slice(cursor + 2, end);
+                    const quotePrefix = quotePrefixAt(cursor);
+                    const normalized = quotePrefix
+                        ? normalizeQuotedLatex(formula)
+                        : formula;
+                    result += quotePrefix
+                        ? `${quotePrefix}${stash(normalized)}`
+                        : `\n\n${stash(normalized)}\n\n`;
                     cursor = end + 2;
                     continue;
                 }
@@ -405,9 +426,9 @@ export async function markToBili(content: string): Promise<string> {
 
     marked.use({
         renderer: {
-            heading(text) {
+            heading(text, level, raw) {
                 // 标题
-                const e = document.createElement('h1');
+                const e = document.createElement(headingTag(level, raw));
                 e.innerHTML = text;
                 return e.outerHTML;
             },

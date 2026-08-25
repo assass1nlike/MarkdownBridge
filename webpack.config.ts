@@ -50,7 +50,8 @@ const config: webpack.Configuration = {
             include: '*://member.bilibili.com/platform/*',
             match: [
                 'https://member.bilibili.com/platform/upload/text/new-edit*',
-                'https://member.bilibili.com/york/read-editor*'
+                'https://member.bilibili.com/york/read-editor*',
+                'https://www.bilibili.com/opus/*'
             ],
             grant: [
                 'GM_xmlhttpRequest',

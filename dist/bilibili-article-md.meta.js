@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name        bilibili-article-md-new-edit
-// @version     0.0.13
+// @version     0.2.4
 // @author      Passkou and contributors
 // @description 将 Markdown 文档转换并导入 B 站新版图文编辑器的用户脚本
 // @match       https://member.bilibili.com/platform/upload/text/new-edit*
 // @match       https://member.bilibili.com/york/read-editor*
+// @match       https://www.bilibili.com/opus/*
 // @run-at      document-end
 // @include     *://member.bilibili.com/platform/*
 // @grant       GM_xmlhttpRequest

@@ -1,21 +1,25 @@
 # Markdown4Bilibili
 
-将 Markdown 文档导入 B 站新版图文编辑器的 Tampermonkey 用户脚本，支持将常见 LaTeX 分隔符转换成 B 站原生公式节点。
+在 Markdown 文档与 B 站新版图文编辑器之间双向转换的 Tampermonkey 用户脚本。
 
 当前适配地址：
 
 ```text
 https://member.bilibili.com/platform/upload/text/new-edit
+https://www.bilibili.com/opus/<id>
 ```
 
 ## 功能
 
 - 从 `.md`、`.markdown` 或 `.txt` 文件导入文章。
+- 将编辑器当前内容导出并下载为 `.md` 文件。
+- 在已发布的 `/opus/<id>` 图文页面直接导出完整 Markdown。
 - 支持标题、列表、引用、链接、代码块等常见 Markdown 格式。
 - 支持 `$...$`、`$$...$$`、`\(...\)`、`\[...\]` 四种公式写法。
 - 公式转换为新版编辑器识别的 `img[data-type="latex"][data-formula]` 节点。
 - 同时提供外层页面的“导入 MD”按钮和编辑器工具栏中的 `M` 按钮。
 - 通过 `postMessage` 跨越 B 站隔离的编辑器 iframe，不读取跨源对象。
+- 导出支持一至六级标题、粗体、斜体、删除线、列表、引用、链接、图片、表格、代码块、分隔线和行内/块级公式。
 - 保留旧版 `/platform/upload/text/edit` 编辑器的基础兼容。
 
 ## 安装
@@ -27,11 +31,26 @@ https://member.bilibili.com/platform/upload/text/new-edit
    ```text
    https://member.bilibili.com/platform/upload/text/new-edit*
    https://member.bilibili.com/york/read-editor*
+   https://www.bilibili.com/opus/*
    ```
 
-4. 打开 B 站图文投稿页。页面右上角会出现蓝色“导入 MD”按钮；内层编辑器加载完成后，工具栏也会出现 `M` 按钮。
+4. 打开 B 站图文投稿页。页面右上角会出现“导入 MD”和“导出 MD”按钮；内层编辑器加载完成后，工具栏也会出现 `M` 按钮。
 
-如果升级过旧版本，请确认 Tampermonkey 中显示的版本号为 `0.0.13`，然后使用 `Ctrl+F5` 强制刷新投稿页。
+如果升级过旧版本，请确认 Tampermonkey 中显示的版本号为 `0.2.2`，然后使用 `Ctrl+F5` 强制刷新页面。
+
+## 导出 Markdown
+
+编辑文章或打开已发布的 `/opus/<id>` 图文时，点击页面右上角的“导出 MD”。公开页导出的 Markdown 会包含文章标题，文件名也优先使用文章标题。
+
+独占一个段落的公式导出为：
+
+```markdown
+$$
+E=mc^2
+$$
+```
+
+夹在文字中的公式导出为 `$E=mc^2$`。
 
 ## 公式示例
 

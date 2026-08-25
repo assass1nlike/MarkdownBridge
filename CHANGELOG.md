@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.2.4
+
+- Remove the duplicate `M` toolbar button from the new editor; use the page-level import button instead.
+
+## 0.2.3
+
+- Preserve Markdown heading levels when importing into the new editor.
+- Remove `>` quote prefixes from multiline display formulas inside blockquotes.
+
+## 0.2.2
+
+- 修复 Markdown 一级至六级标题导入时全部被转换为 `<h1>` 的问题。
+- 现在标题级别会按原 Markdown 层级写入 B 站编辑器。
+
+## 0.2.1
+
+- 修复生产版用户脚本导出时出现 `i is not a constructor` 的模块导入错误。
+
+## 0.2.0
+
+- 支持在 `https://www.bilibili.com/opus/<id>` 已发布图文页面直接导出 Markdown。
+- 导出文件包含文章标题，并保留公开页正文中的格式、图片和图片说明。
+
+## 0.1.0
+
+- 增加从 B 站新版图文编辑器导出 Markdown 的反向转换功能。
+- 支持标题、粗体、斜体、删除线、列表、引用、链接、图片、GFM 表格、代码块和原生分隔线。
+- B 站独立公式导出为 `$$...$$`，行内公式导出为 `$...$`。
+- 外层投稿页面增加“导出 MD”下载按钮。
+
 ## 0.0.13
 
 - 将 Markdown `---` 转换为新版 B 站编辑器的原生 `<hr>` 分隔线，不再插入分隔线图片。

@@ -1,5 +1,7 @@
 import {sleep, querySelectorBlock} from './utils';
 import {markToBili} from './marked';
+import {biliHtmlToMarkdown} from './reverse';
+import {opusDocumentToMarkdown} from './opus';
 
 let editorDocument: Document;
 let editorContentDocument: Document;
@@ -22,7 +24,7 @@ function getOwnEditor(): any | null {
     }
 }
 
-async function sendMarkdownToEditor(markdown: string): Promise<void> {
+async function requestEditor(type: string, payload: Record<string, unknown> = {}): Promise<any> {
     const frame = <HTMLIFrameElement>await querySelectorBlock(
         document,
         'iframe#new-edit-box, #new-edit-box iframe',
@@ -34,7 +36,7 @@ async function sendMarkdownToEditor(markdown: string): Promise<void> {
     }
 
     const requestId = `${Date.now()}-${Math.random()}`;
-    await new Promise<void>((resolve, reject) => {
+    return await new Promise<any>((resolve, reject) => {
         const timeout = window.setTimeout(() => {
             window.removeEventListener('message', onMessage);
             reject(new Error('内层编辑器脚本没有响应，请确认油猴已允许脚本在 iframe 中运行'));
@@ -48,7 +50,7 @@ async function sendMarkdownToEditor(markdown: string): Promise<void> {
             window.clearTimeout(timeout);
             window.removeEventListener('message', onMessage);
             if (data.ok) {
-                resolve();
+                resolve(data);
             } else {
                 reject(new Error(data.error || '内层编辑器导入失败'));
             }
@@ -56,11 +58,95 @@ async function sendMarkdownToEditor(markdown: string): Promise<void> {
         window.addEventListener('message', onMessage);
         target.postMessage({
             channel: MESSAGE_CHANNEL,
-            type: 'import',
+            type,
             requestId,
-            markdown
+            ...payload
         }, '*');
     });
+}
+
+async function sendMarkdownToEditor(markdown: string): Promise<void> {
+    await requestEditor('import', {markdown});
+}
+
+async function requestMarkdownFromEditor(): Promise<string> {
+    const result = await requestEditor('export');
+    if (typeof result.markdown !== 'string') {
+        throw new Error('内层编辑器没有返回 Markdown 内容');
+    }
+    return result.markdown;
+}
+
+function applyPageButtonStyle(button: HTMLButtonElement, top: number, background: string) {
+    Object.assign(button.style, {
+        position: 'fixed',
+        top: `${top}px`,
+        right: '20px',
+        zIndex: '2147483647',
+        width: '88px',
+        height: '36px',
+        padding: '0 12px',
+        border: '0',
+        borderRadius: '6px',
+        background,
+        color: '#fff',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, .18)'
+    });
+}
+
+function safeFilename(title: string, fallback: string): string {
+    return (title.trim() || fallback)
+        .replace(/[\\/:*?"<>|]/g, '_')
+        .slice(0, 80);
+}
+
+function exportFilename(): string {
+    const titleField = Array.from(document.querySelectorAll<HTMLInputElement>('input'))
+        .find(input => /标题/.test(input.placeholder || '') && input.value.trim());
+    const fallback = `bilibili-article-${new Date().toISOString().slice(0, 10)}`;
+    return `${safeFilename(titleField?.value || '', fallback)}.md`;
+}
+
+function downloadMarkdown(markdown: string, filename = exportFilename()) {
+    const url = URL.createObjectURL(new Blob([markdown], {type: 'text/markdown;charset=utf-8'}));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = exportFilename();
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function insertOpusExportButton() {
+    if (document.getElementById('bmd-opus-export')) return;
+
+    const button = document.createElement('button');
+    button.id = 'bmd-opus-export';
+    button.type = 'button';
+    button.textContent = '导出 MD';
+    button.title = '将这篇已发布的 B 站图文下载为 Markdown 文件';
+    applyPageButtonStyle(button, 120, '#18191c');
+    button.addEventListener('click', () => {
+        try {
+            button.textContent = '导出中…';
+            const {markdown, title} = opusDocumentToMarkdown(document);
+            const fallback = `bilibili-opus-${location.pathname.split('/').filter(Boolean).pop() ||
+                new Date().toISOString().slice(0, 10)}`;
+            downloadMarkdown(markdown, `${safeFilename(title, fallback)}.md`);
+            button.textContent = '导出完成';
+        } catch (error) {
+            console.error('[bilibili-article-md]', error);
+            button.textContent = '导出失败';
+            alert(`导出 Markdown 失败：${error instanceof Error ? error.message : error}`);
+        } finally {
+            window.setTimeout(() => button.textContent = '导出 MD', 2000);
+        }
+    });
+    document.body.appendChild(button);
 }
 
 /**
@@ -68,32 +154,14 @@ async function sendMarkdownToEditor(markdown: string): Promise<void> {
  * Bilibili changes the iframe toolbar DOM, and also proves that the userscript
  * is actually running on the current URL.
  */
-function insertPageImportButton() {
-    if (document.getElementById('bmd-page-import')) {
-        return;
-    }
-
+function insertPageButtons() {
+    if (document.getElementById('bmd-page-import')) return;
     const button = document.createElement('button');
     button.id = 'bmd-page-import';
     button.type = 'button';
     button.textContent = '导入 MD';
-    button.title = 'bilibili-article-md 0.0.13：导入 Markdown 文件';
-    Object.assign(button.style, {
-        position: 'fixed',
-        top: '120px',
-        right: '20px',
-        zIndex: '2147483647',
-        height: '36px',
-        padding: '0 14px',
-        border: '0',
-        borderRadius: '6px',
-        background: '#00aeec',
-        color: '#fff',
-        fontSize: '14px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, .18)'
-    });
+    button.title = 'bilibili-article-md 0.1.0：导入 Markdown 文件';
+    applyPageButtonStyle(button, 120, '#00aeec');
 
     const input = document.createElement('input');
     input.type = 'file';
@@ -118,6 +186,27 @@ function insertPageImportButton() {
     button.addEventListener('click', () => input.click());
     document.body.appendChild(button);
     document.body.appendChild(input);
+
+    const exportButton = document.createElement('button');
+    exportButton.id = 'bmd-page-export';
+    exportButton.type = 'button';
+    exportButton.textContent = '导出 MD';
+    exportButton.title = '将当前 B 站图文内容下载为 Markdown 文件';
+    applyPageButtonStyle(exportButton, 164, '#18191c');
+    exportButton.addEventListener('click', async () => {
+        try {
+            exportButton.textContent = '导出中…';
+            downloadMarkdown(await requestMarkdownFromEditor());
+            exportButton.textContent = '导出完成';
+        } catch (error) {
+            console.error('[bilibili-article-md]', error);
+            exportButton.textContent = '导出失败';
+            alert(`导出 Markdown 失败：${error instanceof Error ? error.message : error}`);
+        } finally {
+            window.setTimeout(() => exportButton.textContent = '导出 MD', 2000);
+        }
+    });
+    document.body.appendChild(exportButton);
 }
 
 function loadStyle(targetDocument: Document) {
@@ -220,6 +309,22 @@ async function writeNewContent(markdown: string) {
         newEditorContext = await getNewEditorContext();
     }
     await writeContent(markdown);
+}
+
+function readNewContent(): string {
+    const editor = getOwnEditor() || newEditorContext?.editor;
+    if (editor?.getHTML) {
+        try {
+            return biliHtmlToMarkdown(editor.getHTML());
+        } catch (error) {
+            console.warn('[bilibili-article-md] editor.getHTML() unavailable, using DOM fallback', error);
+        }
+    }
+    const proseMirror = <HTMLElement | null>document.querySelector('.ProseMirror');
+    if (!proseMirror) {
+        throw new Error('找不到新版 B 站编辑区');
+    }
+    return biliHtmlToMarkdown(proseMirror.innerHTML);
 }
 
 /** Insert the Markdown file button into the legacy UEditor toolbar. */
@@ -354,15 +459,14 @@ async function initNew() {
             'iframe#new-edit-box, #new-edit-box iframe',
             30000
         );
-        // The current editor is isolated from its parent. Its own userscript
-        // instance will install the inner M button and receive postMessages.
+        // The outer page provides the import/export controls through the
+        // message bridge.
         if (!frame.contentDocument) {
             console.info('[bilibili-article-md] isolated editor iframe detected; using message bridge');
             return;
         }
         newEditorContext = await getNewEditorContext();
         loadStyle(newEditorContext.document);
-        await insertNewToolbarItem(newEditorContext);
         console.info('[bilibili-article-md] new-edit adapter ready');
     } catch (error) {
         console.error('[bilibili-article-md] new-edit initialization failed', error);
@@ -379,21 +483,26 @@ async function initEmbeddedEditor() {
             frame: null
         };
         loadStyle(document);
-        await insertNewToolbarItem(newEditorContext);
 
         window.addEventListener('message', async (event: MessageEvent) => {
             const data = event.data;
             if (event.source !== window.parent || data?.channel !== MESSAGE_CHANNEL ||
-                data?.type !== 'import' || typeof data.markdown !== 'string') {
+                !['import', 'export'].includes(data?.type)) {
                 return;
             }
             try {
-                await writeNewContent(data.markdown);
+                if (data.type === 'import') {
+                    if (typeof data.markdown !== 'string') {
+                        throw new Error('导入内容不是有效的 Markdown 文本');
+                    }
+                    await writeNewContent(data.markdown);
+                }
                 (<Window>event.source).postMessage({
                     channel: MESSAGE_CHANNEL,
                     type: 'result',
                     requestId: data.requestId,
-                    ok: true
+                    ok: true,
+                    markdown: data.type === 'export' ? readNewContent() : undefined
                 }, '*');
             } catch (error) {
                 (<Window>event.source).postMessage({
@@ -422,8 +531,10 @@ function startRouteWatcher() {
         if (prevPath === '/platform/upload/text/edit') {
             init();
         } else if (prevPath.startsWith('/platform/upload/text/new-edit')) {
-            insertPageImportButton();
+            insertPageButtons();
             initNew();
+        } else if (/^\/opus\/\d+/.test(prevPath)) {
+            insertOpusExportButton();
         }
     }, 200);
 }

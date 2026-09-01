@@ -16,3 +16,7 @@ design/
 
 # Leftover upstream checkout; the new repository is rooted one level above.
 /bilibili-article-md/
+
+# Browser profiles and downloaded renderer bundles
+/.playwright-douyin-profile/
+/tmp-mdnice/

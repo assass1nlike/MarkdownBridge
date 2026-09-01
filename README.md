@@ -1,104 +1,77 @@
 # Markdown4Bilibili
 
-在 Markdown 文档与 B 站新版图文编辑器之间双向转换的 Tampermonkey 用户脚本。
+Markdown4Bilibili 是一组 Tampermonkey 用户脚本和本地工具，用于在 Markdown 文档与 B 站图文编辑器之间双向转换，并将 Markdown + LaTeX 文档生成适合抖音图文投稿的分页图片。
 
-当前适配地址：
+## B 站功能
+
+用户脚本：`dist/bilibili-article-md.user.js`
+
+- 在 B 站新版图文编辑器导入 `.md`、`.markdown` 或 `.txt` 文件。
+- 支持 `$...$`、`$$...$$`、`\(...\)` 和 `\[...\]` 公式。
+- 支持标题、粗体、斜体、删除线、列表、引用、链接、图片、表格、代码块和分隔线。
+- 在编辑页和已发布的 `https://www.bilibili.com/opus/<id>` 页面导出 Markdown。
+
+适配地址：
 
 ```text
 https://member.bilibili.com/platform/upload/text/new-edit
 https://www.bilibili.com/opus/<id>
 ```
 
-## 功能
+## 抖音本地图文工具
 
-- 从 `.md`、`.markdown` 或 `.txt` 文件导入文章。
-- 将编辑器当前内容导出并下载为 `.md` 文件。
-- 在已发布的 `/opus/<id>` 图文页面直接导出完整 Markdown。
-- 支持标题、列表、引用、链接、代码块等常见 Markdown 格式。
-- 支持 `$...$`、`$$...$$`、`\(...\)`、`\[...\]` 四种公式写法。
-- 公式转换为新版编辑器识别的 `img[data-type="latex"][data-formula]` 节点。
-- 同时提供外层页面的“导入 MD”按钮和编辑器工具栏中的 `M` 按钮。
-- 通过 `postMessage` 跨越 B 站隔离的编辑器 iframe，不读取跨源对象。
-- 导出支持一至六级标题、粗体、斜体、删除线、列表、引用、链接、图片、表格、代码块、分隔线和行内/块级公式。
-- 保留旧版 `/platform/upload/text/edit` 编辑器的基础兼容。
+抖音页面对 LaTeX、SVG、CSS 和编辑器节点有限制，因此图文投稿采用本地渲染流程：
 
-## 安装
+1. 本地读取 Markdown。
+2. 使用 `marked` 解析 Markdown，使用 KaTeX 排版公式。
+3. 使用本机 Chrome/Chromium 按 `1080x1440`（3:4）分页截图。
+4. 将生成的 JPEG 文件手动上传到抖音“发布图文”。
 
-1. 为 Firefox、Chrome 或 Edge 安装 [Tampermonkey](https://www.tampermonkey.net/)。
-2. 打开 [`dist/bilibili-article-md.user.js`](dist/bilibili-article-md.user.js)，让 Tampermonkey 安装脚本。
-3. 安装时允许脚本在以下两个地址运行：
+本地渲染不会在抖音页面中执行，不依赖 Tampermonkey，也不会导致抖音页面卡顿。
 
-   ```text
-   https://member.bilibili.com/platform/upload/text/new-edit*
-   https://member.bilibili.com/york/read-editor*
-   https://www.bilibili.com/opus/*
-   ```
+### 安装依赖
 
-4. 打开 B 站图文投稿页。页面右上角会出现“导入 MD”和“导出 MD”按钮；内层编辑器加载完成后，工具栏也会出现 `M` 按钮。
-
-如果升级过旧版本，请确认 Tampermonkey 中显示的版本号为 `0.2.2`，然后使用 `Ctrl+F5` 强制刷新页面。
-
-## 导出 Markdown
-
-编辑文章或打开已发布的 `/opus/<id>` 图文时，点击页面右上角的“导出 MD”。公开页导出的 Markdown 会包含文章标题，文件名也优先使用文章标题。
-
-独占一个段落的公式导出为：
-
-```markdown
-$$
-E=mc^2
-$$
-```
-
-夹在文字中的公式导出为 `$E=mc^2$`。
-
-## 公式示例
-
-```markdown
-行内公式：$x^2+y^2$ 或 \(x^2+y^2\)
-
-块公式：
-$$
-E=mc^2
-$$
-
-或：
-\[
-E=mc^2
-\]
-```
-
-代码块和行内代码中的公式分隔符不会被转换。
-
-## 本地构建
-
-需要 Node.js 18 或更高版本。在仓库根目录运行：
+需要 Node.js 18 或更高版本，并在仓库根目录执行：
 
 ```bash
 npm install --legacy-peer-deps
-npm run build
 ```
 
-构建产物：
+### 生成图文图片
 
-- `dist/bilibili-article-md.user.js`：可直接安装的完整用户脚本。
-- `dist/bilibili-article-md.meta.js`：用户脚本元数据。
+```bash
+npm run render:douyin -- "C:\\path\\to\\article.md"
+```
 
-旧版 `webpack-userscript` 与 webpack 5 存在 peer dependency 冲突，因此安装依赖时需要保留 `--legacy-peer-deps`。
+也可以指定输出目录：
 
-## 工作原理
+```bash
+npm run render:douyin -- "C:\\path\\to\\article.md" "C:\\path\\to\\output"
+```
 
-B 站新版编辑器位于隔离的 `/york/read-editor` iframe 中，外层投稿页不能直接读取其 `window.editor`。脚本会分别运行在外层页面和内层编辑器：外层负责选择文件，内层负责 Markdown 转换和 ProseMirror/Tiptap 写入，两者仅通过 `window.postMessage()` 通信。
+默认输出目录为 Markdown 文件旁边的 `<文件名>-douyin-images`，包含：
+
+- `page-01.jpg`、`page-02.jpg` 等分页图片；
+- `manifest.json`，记录页数、尺寸和公式数量；
+- `render.html`，便于在本地浏览器检查渲染结果。
+
+脚本默认最多生成 30 张图片。抖音当前页面显示最多支持 35 张，为保留余量，超过 30 张时会要求先拆分文档。可通过 `CHROME_PATH` 环境变量指定 Chrome/Chromium 可执行文件路径。
+
+在抖音创作者中心打开“发布图文”（通常为 `https://creator.douyin.com/creator-micro/content/upload?default-tab=3`），选择生成目录中的所有 `page-*.jpg` 文件即可。脚本不会自动点击“发布”。
+
+### 抖音文章导入脚本
+
+`dist/douyin-article-md.user.js` 仍保留抖音“发布文章”编辑器的 Markdown 导入功能，但不负责图文截图。图文投稿请使用上面的本地命令。
 
 ## 开发与验证
 
 ```bash
+npm test
 npm run build
+npm run build:douyin
 git diff --check
 ```
 
-提交前请确认生成后的 `dist/bilibili-article-md.user.js` 中版本号与 `package.json` 一致。
+## 许可证
 
-## 来源与许可证
-
-本项目基于 [codediy/bilibili-article-md](https://github.com/codediy/bilibili-article-md) 修改；其代码源自 Passkou 的实现。本项目继续使用 [MIT License](LICENSE)，并保留原作者版权声明。
+本项目基于 [codediy/bilibili-article-md](https://github.com/codediy/bilibili-article-md) 修改，继续使用 [MIT License](LICENSE)。

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.3
+
+- Move Douyin Markdown-to-image rendering to the local `tools/render-douyin-images.js` command.
+- Render Markdown and LaTeX with local Chrome/Chromium and output 3:4 JPEG pages for manual Douyin image upload.
+- Remove the unstable in-page Douyin image rendering flow from the userscript.
+
+## 0.7.2
+
+- Improve formula fitting, blank-page filtering, and screenshot DOM reuse in the previous Douyin renderer.
+
 ## 0.2.4
 
 - Remove the duplicate `M` toolbar button from the new editor; use the page-level import button instead.

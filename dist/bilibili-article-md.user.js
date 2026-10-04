@@ -1,11 +1,15 @@
 // ==UserScript==
 // @name        bilibili-article-md-new-edit
-// @version     0.2.5
+// @version     0.7.3
 // @author      Passkou and contributors
-// @description 将 Markdown 文档转换并导入 B 站新版图文编辑器的用户脚本
+// @description 在 B 站图文编辑器导入 Markdown，并从编辑页和已发布文章导出 Markdown
+// @homepage    https://github.com/assassinlike/MarkdownBridge
+// @supportURL  https://github.com/assassinlike/MarkdownBridge/issues
 // @match       https://member.bilibili.com/platform/upload/text/new-edit*
 // @match       https://member.bilibili.com/york/read-editor*
 // @match       https://www.bilibili.com/opus/*
+// @downloadURL https://raw.githubusercontent.com/assassinlike/MarkdownBridge/main/dist/bilibili-article-md.user.js
+// @updateURL   https://raw.githubusercontent.com/assassinlike/MarkdownBridge/main/dist/bilibili-article-md.meta.js
 // @run-at      document-end
 // @include     *://member.bilibili.com/platform/*
 // @grant       GM_xmlhttpRequest

@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+- Rename the project to MarkdownBridge and update repository links while preserving existing userscript identities and filenames.
+- Support paragraph-local soft line breaks in inline math, including blockquotes, and stop unmatched delimiters at Markdown block boundaries.
+- When an aligned derivation still exceeds the width at the font floor, place its initial left-hand side on a separate row, preserving the source TeX and equation tag.
+- Split long standalone display formulas between complete rendered lines when remaining page space exceeds a configurable 25% threshold; preserve alignment, fractions, roots, and matrices.
+- Keep display math at or above a configurable 24px font floor; use locally installed MathJax 4 to wrap wider expressions and aligned equations before pagination.
+- Fix display math inside blockquotes in the local image renderer: remove Markdown quote prefixes from LaTeX while preserving quote nesting and mathematical greater-than signs.
+- Add `npm run xhs -- setup/login/render/preview/publish` for Xiaohongshu image notes, using a pinned XiaohongshuSkills CLI for uploads.
+- Generate 1200x1600 images and editable note metadata under the repository's output directory; validate media and text before opening the publishing flow.
+- Load installed KaTeX assets for local rendering, fit formulas after fonts load, and reject content that exceeds a page.
+
+- Replace arbitrary vertical screenshot clipping with semantic fixed-page
+  pagination in the local Douyin renderer.
+- Keep display formulas, images and code blocks intact across page boundaries;
+  scale oversized display formulas to the available content width.
+
 ## 0.7.3
 
 - Move Douyin Markdown-to-image rendering to the local `tools/render-douyin-images.js` command.

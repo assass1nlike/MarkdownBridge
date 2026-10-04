@@ -20,3 +20,6 @@ design/
 # Browser profiles and downloaded renderer bundles
 /.playwright-douyin-profile/
 /tmp-mdnice/
+/tmp-semantic-test*/
+/.local/
+/output/

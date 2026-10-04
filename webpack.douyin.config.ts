@@ -19,8 +19,8 @@ const config: webpack.Configuration = {
     plugins: [new WebpackUserscript({
         headers: {
             name: 'Markdown4Douyin',
-            downloadURL: isDebug ? undefined : 'https://raw.githubusercontent.com/assassinlike/MarkdownBridge/main/dist/douyin-article-md.user.js',
-            updateURL: isDebug ? undefined : 'https://raw.githubusercontent.com/assassinlike/MarkdownBridge/main/dist/douyin-article-md.meta.js',
+            downloadURL: isDebug ? undefined : 'https://raw.githubusercontent.com/assass1nlike/MarkdownBridge/main/dist/douyin-article-md.user.js',
+            updateURL: isDebug ? undefined : 'https://raw.githubusercontent.com/assass1nlike/MarkdownBridge/main/dist/douyin-article-md.meta.js',
             version: JSON.parse(fs.readFileSync('package.json', 'utf8')).version,
             description: '在抖音文章编辑器中导入 Markdown，并兼容 LaTeX 公式和明暗主题',
             namespace: 'assassinlike-markdown4douyin',

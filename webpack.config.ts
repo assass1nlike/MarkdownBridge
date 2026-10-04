@@ -48,8 +48,8 @@ const config: webpack.Configuration = {
         headers: {
             name: isDebug ? scriptName + '-new-edit-dev' : scriptName + '-new-edit',
             description: '在 B 站图文编辑器导入 Markdown，并从编辑页和已发布文章导出 Markdown',
-            downloadURL: isDebug ? undefined : 'https://raw.githubusercontent.com/assassinlike/MarkdownBridge/main/dist/bilibili-article-md.user.js',
-            updateURL: isDebug ? undefined : 'https://raw.githubusercontent.com/assassinlike/MarkdownBridge/main/dist/bilibili-article-md.meta.js',
+            downloadURL: isDebug ? undefined : 'https://raw.githubusercontent.com/assass1nlike/MarkdownBridge/main/dist/bilibili-article-md.user.js',
+            updateURL: isDebug ? undefined : 'https://raw.githubusercontent.com/assass1nlike/MarkdownBridge/main/dist/bilibili-article-md.meta.js',
             "run-at": 'document-end',
             include: '*://member.bilibili.com/platform/*',
             match: [
@@ -75,4 +75,3 @@ const config: webpack.Configuration = {
     })]
 };
 export default config;
-

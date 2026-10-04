@@ -1,10 +1,10 @@
 # MarkdownBridge
 
-[MarkdownBridge](https://github.com/assassinlike/MarkdownBridge) 是一组 Tampermonkey 用户脚本和本地工具，用于在 Markdown 文档与 B 站图文编辑器之间双向转换，并将 Markdown + LaTeX 文档生成抖音、小红书图文图片，支持小红书自动上传和发布前预览。
+[MarkdownBridge](https://github.com/assass1nlike/MarkdownBridge) 是一组 Tampermonkey 用户脚本和本地工具，用于在 Markdown 文档与 B 站图文编辑器之间双向转换，并将 Markdown + LaTeX 文档生成抖音、小红书图文图片，支持小红书自动上传和发布前预览。
 
 ## B 站功能
 
-用户脚本：[安装 B 站脚本](https://raw.githubusercontent.com/assassinlike/MarkdownBridge/main/dist/bilibili-article-md.user.js)。文件为 `dist/bilibili-article-md.user.js`，沿用原脚本名和命名空间，以兼容已有安装。
+用户脚本：[安装 B 站脚本](https://raw.githubusercontent.com/assass1nlike/MarkdownBridge/main/dist/bilibili-article-md.user.js)。文件为 `dist/bilibili-article-md.user.js`，沿用原脚本名和命名空间，以兼容已有安装。
 
 - 在 B 站新版图文编辑器导入 `.md`、`.markdown` 或 `.txt` 文件。
 - 支持 `$...$`、`$$...$$`、`\(...\)` 和 `\[...\]` 公式。

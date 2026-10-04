@@ -2,13 +2,13 @@
   "name": "markdown-bridge",
   "version": "0.7.3",
   "description": "面向 B 站、抖音和小红书的 Markdown 转换、图文渲染与发布工具",
-  "homepage": "https://github.com/assassinlike/MarkdownBridge",
+  "homepage": "https://github.com/assass1nlike/MarkdownBridge",
   "repository": {
     "type": "git",
-    "url": "https://github.com/assassinlike/MarkdownBridge.git"
+    "url": "https://github.com/assass1nlike/MarkdownBridge.git"
   },
   "bugs": {
-    "url": "https://github.com/assassinlike/MarkdownBridge/issues"
+    "url": "https://github.com/assass1nlike/MarkdownBridge/issues"
   },
   "private": true,
   "scripts": {
